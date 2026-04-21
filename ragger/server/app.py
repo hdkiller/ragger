@@ -8,7 +8,6 @@ from ragger.core.workspaces import RAGWorkspaceManager
 from ragger.server.routes.health import build_router as build_health_router
 from ragger.server.routes.workspaces import build_router as build_workspaces_router
 
-
 app = FastAPI(
     title="ragger",
     version="0.1.0",

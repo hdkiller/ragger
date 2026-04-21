@@ -14,7 +14,9 @@ class CodebaseIngestorTests(unittest.TestCase):
             (root / "node_modules").mkdir()
             (root / ".nuxt").mkdir()
             (root / ".hidden").mkdir()
-            (root / "src" / "app.ts").write_text("export const greet = (name: string) => `hi ${name}`;\n")
+            (root / "src" / "app.ts").write_text(
+                "export const greet = (name: string) => `hi ${name}`;\n"
+            )
             (root / "src" / "App.vue").write_text(
                 "<template><div>{{ title }}</div></template>\n<script setup lang=\"ts\">const title = 'hi'</script>\n"
             )
@@ -31,9 +33,15 @@ class CodebaseIngestorTests(unittest.TestCase):
             self.assertEqual(prepared.file_count, 5)
             self.assertEqual(prepared.indexed_extensions, [".json", ".md", ".ts", ".txt", ".vue"])
             self.assertGreaterEqual(prepared.chunk_count, 5)
-            self.assertTrue(all("node_modules" not in doc.metadata["source"] for doc in prepared.documents))
-            self.assertTrue(all(".nuxt" not in doc.metadata["source"] for doc in prepared.documents))
-            self.assertTrue(all("/.hidden/" not in doc.metadata["source"] for doc in prepared.documents))
+            self.assertTrue(
+                all("node_modules" not in doc.metadata["source"] for doc in prepared.documents)
+            )
+            self.assertTrue(
+                all(".nuxt" not in doc.metadata["source"] for doc in prepared.documents)
+            )
+            self.assertTrue(
+                all("/.hidden/" not in doc.metadata["source"] for doc in prepared.documents)
+            )
 
     def test_prepare_documents_populates_workspace_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:

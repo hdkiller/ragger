@@ -17,7 +17,11 @@ class ServerRouteTests(unittest.TestCase):
             "workspace_count": 1,
             "embedding_model": "nomic-embed-text",
             "model": "gemma4:26b",
-            "ollama": {"reachable": True, "base_url": "http://localhost:11434", "models": ["gemma4:26b"]},
+            "ollama": {
+                "reachable": True,
+                "base_url": "http://localhost:11434",
+                "models": ["gemma4:26b"],
+            },
         }
         with patch("ragger.server.app.manager.get_health", return_value=fake_health):
             response = self.client.get("/health")

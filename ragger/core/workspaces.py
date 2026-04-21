@@ -52,7 +52,9 @@ Answer:"""
         self.persist_path.mkdir(parents=True, exist_ok=True)
         self.metadata_path = self.persist_path / "ragger_workspaces.json"
         self.client = PersistentClient(path=str(self.persist_path))
-        self.embeddings = OllamaEmbeddings(model=self.embedding_model, base_url=self.ollama_base_url)
+        self.embeddings = OllamaEmbeddings(
+            model=self.embedding_model, base_url=self.ollama_base_url
+        )
         self.llm = ChatOllama(model=self.model_name, temperature=0, base_url=self.ollama_base_url)
         self.ingestor = CodebaseIngestor()
 

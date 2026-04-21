@@ -3,7 +3,6 @@ import os
 
 from langchain_ollama import ChatOllama
 
-
 DEFAULT_MODEL = "gemma4:26b"
 
 

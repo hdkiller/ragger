@@ -7,7 +7,6 @@ from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import Language, RecursiveCharacterTextSplitter
 
-
 CODE_LANGUAGE_BY_EXTENSION: dict[str, Language] = {
     ".py": Language.PYTHON,
     ".ts": Language.TS,

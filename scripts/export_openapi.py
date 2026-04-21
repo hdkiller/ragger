@@ -7,7 +7,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from ragger.server.app import app
 
-
 if __name__ == "__main__":
     output_path = PROJECT_ROOT / "docs" / "openapi.json"
     output_path.parent.mkdir(parents=True, exist_ok=True)

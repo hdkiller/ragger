@@ -130,9 +130,7 @@ class RaggerApp(App):
             )
             self.current_workspace = workspace
             self.engine.set_workspace(workspace)
-            self.last_ingest_summary = (
-                f"Last ingest: `{workspace}` with {stats['file_count']} files / {stats['chunk_count']} chunks"
-            )
+            self.last_ingest_summary = f"Last ingest: `{workspace}` with {stats['file_count']} files / {stats['chunk_count']} chunks"
             self.log_widget.write_line(
                 f"Indexed {stats['file_count']} files and {stats['chunk_count']} chunks into `{workspace}`."
             )

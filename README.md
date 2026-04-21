@@ -175,6 +175,12 @@ Run the unit test suite with:
 PYTHONPYCACHEPREFIX=/tmp/pycache .venv/bin/python -m unittest discover -s tests/unit -v
 ```
 
+Format Python code with:
+
+```bash
+.venv/bin/black ragger tests/unit scripts
+```
+
 Current test coverage includes:
 
 - ingestion and file filtering

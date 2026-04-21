@@ -55,6 +55,12 @@ Run tests:
 PYTHONPYCACHEPREFIX=/tmp/pycache .venv/bin/python -m unittest discover -s tests/unit -v
 ```
 
+Format Python code:
+
+```bash
+.venv/bin/black ragger tests/unit scripts
+```
+
 ## Notes for changes
 
 - Default server port is `8170`.

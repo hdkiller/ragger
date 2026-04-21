@@ -4,7 +4,6 @@ import os
 from huggingface_hub import hf_hub_download
 from langchain_community.llms import LlamaCpp
 
-
 DEFAULT_REPO = "ggml-org/gemma-4-26B-A4B-it-GGUF"
 DEFAULT_FILE = "gemma-4-26B-A4B-it-Q4_K_M.gguf"
 

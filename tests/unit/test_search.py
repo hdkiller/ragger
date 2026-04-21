@@ -16,7 +16,9 @@ class RAGEngineTests(unittest.TestCase):
         result = engine.retrieve("Who is Alice?")
 
         self.assertEqual(result, ["doc1"])
-        manager.retrieve_documents.assert_called_once_with(workspace="book", query="Who is Alice?", k=5)
+        manager.retrieve_documents.assert_called_once_with(
+            workspace="book", query="Who is Alice?", k=5
+        )
 
     def test_get_stats_adds_workspace_key(self):
         manager = Mock()
