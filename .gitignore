@@ -167,3 +167,6 @@ outputs/
 conductor/
 openspec/
 tmp/
+
+# Node modules
+node_modules/
