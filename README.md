@@ -1,87 +1,91 @@
 # ragger
 
-Local multi-workspace RAG for codebases and docs, backed by Chroma + Ollama.
+Local multi-workspace RAG for codebases and docs, built around Chroma, Ollama, a FastAPI server, and a terminal-first TUI.
 
-## Screenshots
+`ragger` gives you three ways to work with the same local retrieval stack:
 
-Workspace indexing and monitoring in the TUI:
+- a Textual TUI for indexing repos and exploring results interactively
+- a FastAPI server for external clients and editor tooling
+- a CLI for indexing, stats, and search from scripts or the terminal
 
-![Index workspace](/Users/hdkiller/Develop/pets/ragger/docs/index.png)
+## Highlights
 
-Querying the RAG engine and inspecting retrieval hits:
-
-![Query workspace](/Users/hdkiller/Develop/pets/ragger/docs/query.png)
-
-## What it includes
-
-- `python3 -m ragger.tui`: Textual TUI for ingesting repos, inspecting retrieval hits, and chatting with Gemma through Ollama
-- `python3 -m ragger.server`: local FastAPI server for external clients such as Pi extensions
-- `python3 -m ragger.cli ...`: helper CLI for indexing, stats, and search
-- `./pi-ragger/`: Pi extension that talks to the local FastAPI server
+- Run everything locally with Ollama-backed chat and embeddings
+- Index multiple workspaces and query them independently
+- Inspect retrieval hits directly in the TUI
+- Expose the same functionality over HTTP for other tools
+- Connect Pi through the bundled `pi-ragger` extension
 
 ## Project layout
-
-The main Python package now lives under `./ragger/`:
 
 - `ragger/core/`: ingestion, workspace management, search, and health helpers
 - `ragger/server/`: FastAPI app and routes
 - `ragger/tui/`: Textual app plus UI helpers
 - `ragger/cli/`: CLI entrypoint
+- `pi-ragger/`: Pi extension for the local API server
 
-## Basic usage
+## Quick start
 
-Start Ollama first and make sure the models you want are available, for example:
+Create a virtual environment and install the project:
 
 ```bash
-ollama run gemma4:26b
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e .
+```
+
+Start Ollama and make sure the models you want are available:
+
+```bash
+ollama pull gemma4:26b
 ollama pull nomic-embed-text
 ```
 
-Run the TUI:
+Launch the TUI:
 
 ```bash
 python3 -m ragger.tui
 ```
 
-Inside the TUI:
+Inside the TUI, index a workspace:
 
 ```text
 /ingest default /path/to/repo
 ```
 
-or:
+You can also omit the workspace name:
 
 ```text
 /ingest /path/to/repo
 ```
 
-Then ask questions normally.
+After indexing completes, ask questions normally.
 
-Run the API server:
+## Running the server
+
+Start the local API server before using external clients:
 
 ```bash
 python3 -m ragger.server
 ```
 
-Start the server before using the Pi extension.
+Default base URL:
 
-The default API base URL is:
-
-```bash
+```text
 http://127.0.0.1:8170
 ```
 
-Swagger UI and ReDoc are available when the server is running:
+Interactive docs:
 
-```bash
-http://127.0.0.1:8170/docs
-http://127.0.0.1:8170/redoc
-http://127.0.0.1:8170/openapi.json
-```
+- Swagger UI: `http://127.0.0.1:8170/docs`
+- ReDoc: `http://127.0.0.1:8170/redoc`
+- OpenAPI JSON: `http://127.0.0.1:8170/openapi.json`
 
-The checked-in exported spec lives at [docs/openapi.json](/Users/hdkiller/Develop/pets/ragger/docs/openapi.json:1).
+The checked-in exported spec lives at [docs/openapi.json](docs/openapi.json).
 
-Run the CLI:
+## CLI usage
+
+Run commands directly with Python:
 
 ```bash
 python3 -m ragger.cli index default /path/to/repo
@@ -89,7 +93,7 @@ python3 -m ragger.cli stats default
 python3 -m ragger.cli search default "Where is auth configured?"
 ```
 
-If you install the project, console scripts are also available:
+If installed in your environment, console scripts are also available:
 
 ```bash
 ragger-tui
@@ -99,7 +103,7 @@ ragger-cli search default "Where is auth configured?"
 
 ## Pi extension
 
-Before starting Pi with `pi-ragger`, make sure the local ragger server is already running:
+Before starting Pi with `pi-ragger`, make sure the local server is already running:
 
 ```bash
 python3 -m ragger.server
@@ -111,7 +115,9 @@ Then start Pi with the extension:
 pi -e ./pi-ragger/index.ts
 ```
 
-## API curl examples
+More extension details are in [`pi-ragger/README.md`](./pi-ragger/README.md).
+
+## API examples
 
 Index a workspace:
 
@@ -131,7 +137,7 @@ Fetch workspace status:
 curl -sS http://127.0.0.1:8170/workspaces/book/status | jq
 ```
 
-The older stats endpoint is still available too:
+The legacy stats endpoint is still available:
 
 ```bash
 curl -sS http://127.0.0.1:8170/workspaces/book/stats | jq
@@ -167,15 +173,26 @@ Export the checked-in OpenAPI spec:
 .venv/bin/python scripts/export_openapi.py
 ```
 
-## Tests
+## Indexed file types
 
-Run the unit test suite with:
+`ragger` currently indexes:
+
+- `.py`, `.ts`, `.tsx`, `.js`, `.jsx`, `.vue`
+- `.md`, `.txt`
+- `.json`, `.yaml`, `.yml`, `.toml`
+- `.html`, `.css`, `.scss`
+
+Common generated folders such as `node_modules`, `.nuxt`, `.next`, `dist`, and `coverage` are skipped by default.
+
+## Development
+
+Run the unit test suite:
 
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/pycache .venv/bin/python -m unittest discover -s tests/unit -v
 ```
 
-Format Python code with:
+Format Python code:
 
 ```bash
 .venv/bin/black ragger tests/unit scripts
@@ -184,15 +201,13 @@ Format Python code with:
 Current test coverage includes:
 
 - ingestion and file filtering
-- workspace/search delegation
+- workspace and search delegation
 - TUI command and panel helpers
 - FastAPI route contracts
 
 ## Commit convention
 
-This repo uses **semantic commit messages** as a convention.
-
-Preferred format:
+This repo uses semantic commit messages:
 
 ```text
 type(scope): short summary
@@ -203,7 +218,7 @@ Examples:
 ```text
 feat(server): add workspace status endpoint
 fix(tui): show retrieval hits for active workspace
-docs(readme): add curl examples for the local API
+docs(readme): improve setup and screenshot sections
 test(core): cover mixed file ingestion and exclusions
 refactor(core): move workspace logic into package modules
 ```
@@ -217,13 +232,12 @@ Common types:
 - `test`
 - `chore`
 
-## Indexed file types
+## Screenshots
 
-`ragger` currently indexes:
+Workspace indexing and monitoring in the TUI:
 
-- `.py`, `.ts`, `.tsx`, `.js`, `.jsx`, `.vue`
-- `.md`, `.txt`
-- `.json`, `.yaml`, `.yml`, `.toml`
-- `.html`, `.css`, `.scss`
+<img src="./docs/index.jpg" alt="Index workspace" width="100%" />
 
-Common generated folders such as `node_modules`, `.nuxt`, `.next`, `dist`, and `coverage` are skipped by default.
+Querying the RAG engine and inspecting retrieval hits:
+
+<img src="./docs/query.jpg" alt="Query workspace" width="100%" />
