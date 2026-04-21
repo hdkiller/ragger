@@ -21,6 +21,7 @@ Local multi-workspace RAG for codebases and docs. Built with **Chroma**, **Ollam
   - [Textual TUI](#textual-tui)
   - [FastAPI Server](#fastapi-server)
   - [CLI](#cli)
+  - [API Usage (curl)](#-api-usage-curl)
 - [Pi Extension](#-pi-extension)
 - [Development](#-development)
 - [Screenshots](#-screenshots)
@@ -87,6 +88,9 @@ Perfect for quick searches or background scripts.
 ragger-cli index default /path/to/repo
 ragger-cli search default "Where is the auth logic?"
 ```
+
+### 🌐 API Usage (curl)
+For detailed API examples, including workspace management and direct search via `curl`, see the [**Usage Guide**](docs/usage.md).
 
 ---
 
