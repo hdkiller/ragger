@@ -156,3 +156,14 @@ cython_debug/
 *.log
 data/
 outputs/
+.DS_Store
+
+# Local agent / planning artifacts
+.agents/skills/
+.claude/
+.codex/skills/
+.gemini/
+.pi/
+conductor/
+openspec/
+tmp/
