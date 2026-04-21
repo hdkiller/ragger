@@ -117,7 +117,7 @@ class CodebaseIngestor:
             dirnames[:] = [
                 dirname
                 for dirname in dirnames
-                if dirname not in EXCLUDED_DIRECTORIES and not dirname.startswith(".pytest_cache")
+                if dirname not in EXCLUDED_DIRECTORIES and not dirname.startswith(".")
             ]
 
             root_path = Path(root)
