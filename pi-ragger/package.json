@@ -1,0 +1,10 @@
+{
+  "name": "pi-ragger",
+  "version": "0.1.0",
+  "description": "Pi extension for the local ragger FastAPI server",
+  "type": "module",
+  "main": "index.ts",
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.41"
+  }
+}
