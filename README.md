@@ -1,243 +1,124 @@
-# ragger
+# 🗄️ ragger
 
-Local multi-workspace RAG for codebases and docs, built around Chroma, Ollama, a FastAPI server, and a terminal-first TUI.
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Local RAG](https://img.shields.io/badge/RAG-Local-green.svg)](#)
 
-`ragger` gives you three ways to work with the same local retrieval stack:
+Local multi-workspace RAG for codebases and docs. Built with **Chroma**, **Ollama**, **FastAPI**, and a terminal-first **Textual TUI**.
 
-- a Textual TUI for indexing repos and exploring results interactively
-- a FastAPI server for external clients and editor tooling
-- a CLI for indexing, stats, and search from scripts or the terminal
+`ragger` provides a unified local retrieval stack accessible via three primary interfaces:
+- 🖥️ **Textual TUI**: Interactive workspace management and real-time result exploration.
+- 🚀 **FastAPI Server**: Seamless integration for external clients, Pi extensions, and editor tooling.
+- ⌨️ **CLI**: Scriptable indexing, search, and system statistics.
 
-## Highlights
+---
 
-- Run everything locally with Ollama-backed chat and embeddings
-- Index multiple workspaces and query them independently
-- Inspect retrieval hits directly in the TUI
-- Expose the same functionality over HTTP for other tools
-- Connect Pi through the bundled `pi-ragger` extension
+## 📑 Table of Contents
+- [Highlights](#-highlights)
+- [Quick Start](#-quick-start)
+- [Interfaces](#-interfaces)
+  - [Textual TUI](#textual-tui)
+  - [FastAPI Server](#fastapi-server)
+  - [CLI](#cli)
+- [Pi Extension](#-pi-extension)
+- [Development](#-development)
+- [Screenshots](#-screenshots)
 
-## Project layout
+---
 
-- `ragger/core/`: ingestion, workspace management, search, and health helpers
-- `ragger/server/`: FastAPI app and routes
-- `ragger/tui/`: Textual app plus UI helpers
-- `ragger/cli/`: CLI entrypoint
-- `pi-ragger/`: Pi extension for the local API server
+## ✨ Highlights
 
-## Quick start
+- **100% Local**: Ollama-backed chat and embeddings ensure your data stays on your machine.
+- **Multi-Workspace**: Index and query multiple repositories or docsets independently.
+- **Deep Inspection**: View retrieval hits and metadata directly within the TUI.
+- **Extensible**: Standardized FastAPI endpoints for building custom integrations.
+- **Smart Filtering**: Automatically skips `node_modules`, `.git`, and build artifacts.
 
-Create a virtual environment and install the project:
+---
 
+## 🚀 Quick Start
+
+### 1. Installation
 ```bash
 python3 -m venv .venv
-. .venv/bin/activate
+source .venv/bin/activate
 pip install -e .
 ```
 
-Start Ollama and make sure the models you want are available:
-
+### 2. Prepare Ollama
+Ensure [Ollama](https://ollama.com/) is running and pull the required models:
 ```bash
 ollama pull gemma4:26b
 ollama pull nomic-embed-text
 ```
 
-Launch the TUI:
-
-```bash
-python3 -m ragger.tui
-```
-
-Inside the TUI, index a workspace:
-
-```text
-/ingest default /path/to/repo
-```
-
-You can also omit the workspace name:
-
-```text
-/ingest /path/to/repo
-```
-
-After indexing completes, ask questions normally.
-
-## Running the server
-
-Start the local API server before using external clients:
-
-```bash
-python3 -m ragger.server
-```
-
-Default base URL:
-
-```text
-http://127.0.0.1:8170
-```
-
-Interactive docs:
-
-- Swagger UI: `http://127.0.0.1:8170/docs`
-- ReDoc: `http://127.0.0.1:8170/redoc`
-- OpenAPI JSON: `http://127.0.0.1:8170/openapi.json`
-
-The checked-in exported spec lives at [docs/openapi.json](docs/openapi.json).
-
-## CLI usage
-
-Run commands directly with Python:
-
-```bash
-python3 -m ragger.cli index default /path/to/repo
-python3 -m ragger.cli stats default
-python3 -m ragger.cli search default "Where is auth configured?"
-```
-
-If installed in your environment, console scripts are also available:
-
+### 3. Launch & Index
+Start the TUI to begin indexing your first workspace:
 ```bash
 ragger-tui
-ragger-server
-ragger-cli search default "Where is auth configured?"
 ```
+Inside the TUI, use the command: `/ingest default /path/to/repo`
 
-## Pi extension
+---
 
-Before starting Pi with `pi-ragger`, make sure the local server is already running:
+## 🛠️ Interfaces
 
+### Textual TUI
+The primary way to interact with your workspaces. Features a command console and a results panel.
 ```bash
-python3 -m ragger.server
+# Launch via module or script
+python3 -m ragger.tui
+# or
+ragger-tui
 ```
 
-Then start Pi with the extension:
+### FastAPI Server
+Exposes the retrieval engine over HTTP. Default: `http://127.0.0.1:8170`
+```bash
+ragger-server
+```
+- **Interactive Docs**: [/docs](http://127.0.0.1:8170/docs) (Swagger) or [/redoc](http://127.0.0.1:8170/redoc)
+- **OpenAPI Spec**: Available at `docs/openapi.json`
 
+### CLI
+Perfect for quick searches or background scripts.
+```bash
+ragger-cli index default /path/to/repo
+ragger-cli search default "Where is the auth logic?"
+```
+
+---
+
+## 🥧 Pi Extension
+Connect **Pi** through the bundled `pi-ragger` extension. Ensure the `ragger-server` is running first:
 ```bash
 pi -e ./pi-ragger/index.ts
 ```
 
-More extension details are in [`pi-ragger/README.md`](./pi-ragger/README.md).
+---
 
-## API examples
+## 🧪 Development
 
-Index a workspace:
-
-```bash
-curl -sS http://127.0.0.1:8170/workspaces/index \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "workspace": "book",
-    "path": "/absolute/path/to/alice.txt",
-    "replace": true
-  }'
-```
-
-Fetch workspace status:
-
-```bash
-curl -sS http://127.0.0.1:8170/workspaces/book/status | jq
-```
-
-The legacy stats endpoint is still available:
-
-```bash
-curl -sS http://127.0.0.1:8170/workspaces/book/stats | jq
-```
-
-Query a workspace:
-
-```bash
-curl -sS http://127.0.0.1:8170/workspaces/search \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "workspace": "book",
-    "query": "Who is Alice?",
-    "k": 5
-  }' | jq
-```
-
-List workspaces:
-
-```bash
-curl -sS http://127.0.0.1:8170/workspaces | jq
-```
-
-Check server health:
-
-```bash
-curl -sS http://127.0.0.1:8170/health | jq
-```
-
-Export the checked-in OpenAPI spec:
-
-```bash
-.venv/bin/python scripts/export_openapi.py
-```
-
-## Indexed file types
-
-`ragger` currently indexes:
-
-- `.py`, `.ts`, `.tsx`, `.js`, `.jsx`, `.vue`
-- `.md`, `.txt`
-- `.json`, `.yaml`, `.yml`, `.toml`
-- `.html`, `.css`, `.scss`
-
-Common generated folders such as `node_modules`, `.nuxt`, `.next`, `dist`, and `coverage` are skipped by default.
-
-## Development
-
-Run the unit test suite:
-
+### Running Tests
 ```bash
 PYTHONPYCACHEPREFIX=/tmp/pycache .venv/bin/python -m unittest discover -s tests/unit -v
 ```
 
-Format Python code:
-
+### Code Formatting
 ```bash
-.venv/bin/black ragger tests/unit scripts
+black ragger tests/unit scripts
 ```
 
-Current test coverage includes:
+### Commit Convention
+We use **Semantic Commits**: `type(scope): summary` (e.g., `feat(server): add status endpoint`).
 
-- ingestion and file filtering
-- workspace and search delegation
-- TUI command and panel helpers
-- FastAPI route contracts
+---
 
-## Commit convention
+## 📸 Screenshots
 
-This repo uses semantic commit messages:
+**Workspace Indexing in the TUI**
+![Index workspace](./docs/index.jpg)
 
-```text
-type(scope): short summary
-```
-
-Examples:
-
-```text
-feat(server): add workspace status endpoint
-fix(tui): show retrieval hits for active workspace
-docs(readme): improve setup and screenshot sections
-test(core): cover mixed file ingestion and exclusions
-refactor(core): move workspace logic into package modules
-```
-
-Common types:
-
-- `feat`
-- `fix`
-- `docs`
-- `refactor`
-- `test`
-- `chore`
-
-## Screenshots
-
-Workspace indexing and monitoring in the TUI:
-
-<img src="./docs/index.jpg" alt="Index workspace" width="100%" />
-
-Querying the RAG engine and inspecting retrieval hits:
-
-<img src="./docs/query.jpg" alt="Query workspace" width="100%" />
+**Querying the RAG engine**
+![Query workspace](./docs/query.jpg)
