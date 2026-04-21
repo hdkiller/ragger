@@ -1,7 +1,7 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
 
-const DEFAULT_BASE_URL = process.env.RAGGER_BASE_URL ?? "http://127.0.0.1:8000";
+const DEFAULT_BASE_URL = process.env.RAGGER_BASE_URL ?? "http://127.0.0.1:8170";
 const DEFAULT_WORKSPACE = process.env.RAGGER_WORKSPACE ?? "default";
 const DEFAULT_TOP_K = Number(process.env.RAGGER_TOP_K ?? "4");
 
@@ -26,17 +26,37 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 	const response = await fetch(url, {
 		...init,
 		headers: {
+			accept: "application/json",
 			"content-type": "application/json",
 			...(init?.headers ?? {}),
 		},
 	});
 
+	const contentType = response.headers.get("content-type") ?? "";
 	if (!response.ok) {
 		const text = await response.text();
 		throw new Error(`Ragger API ${response.status}: ${text}`);
 	}
 
+	if (!contentType.includes("application/json")) {
+		const text = await response.text();
+		throw new Error(
+			`Ragger API returned non-JSON response from ${url}. ` +
+				`Check that the server is running on ${baseUrlForMessage(url)}. ` +
+				`Response started with: ${text.slice(0, 120)}`,
+		);
+	}
+
 	return (await response.json()) as T;
+}
+
+function baseUrlForMessage(url: string): string {
+	try {
+		const parsed = new URL(url);
+		return parsed.origin;
+	} catch {
+		return url;
+	}
 }
 
 function formatHits(hits: SearchHit[]): string {
