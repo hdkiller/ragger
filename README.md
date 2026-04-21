@@ -2,11 +2,21 @@
 
 Local multi-workspace RAG for codebases and docs, backed by Chroma + Ollama.
 
+## Screenshots
+
+Workspace indexing and monitoring in the TUI:
+
+![Index workspace](/Users/hdkiller/Develop/pets/ragger/docs/index.png)
+
+Querying the RAG engine and inspecting retrieval hits:
+
+![Query workspace](/Users/hdkiller/Develop/pets/ragger/docs/query.png)
+
 ## What it includes
 
-- `python3 main.py`: Textual TUI for ingesting repos, inspecting retrieval hits, and chatting with Gemma through Ollama
-- `python3 -m ragger_server`: local FastAPI server for external clients such as Pi extensions
-- `python3 -m ragger_cli ...`: helper CLI for indexing, stats, and search
+- `python3 -m ragger.tui`: Textual TUI for ingesting repos, inspecting retrieval hits, and chatting with Gemma through Ollama
+- `python3 -m ragger.server`: local FastAPI server for external clients such as Pi extensions
+- `python3 -m ragger.cli ...`: helper CLI for indexing, stats, and search
 - `./pi-ragger/`: Pi extension that talks to the local FastAPI server
 
 ## Project layout
@@ -17,13 +27,6 @@ The main Python package now lives under `./ragger/`:
 - `ragger/server/`: FastAPI app and routes
 - `ragger/tui/`: Textual app plus UI helpers
 - `ragger/cli/`: CLI entrypoint
-
-Compatibility wrappers are still kept at the repo root:
-
-- `main.py`
-- `ragger_server.py`
-- `ragger_cli.py`
-- legacy import shims under `rag/` and `tui/`
 
 ## Basic usage
 
@@ -37,7 +40,7 @@ ollama pull nomic-embed-text
 Run the TUI:
 
 ```bash
-python3 main.py
+python3 -m ragger.tui
 ```
 
 Inside the TUI:
@@ -57,14 +60,10 @@ Then ask questions normally.
 Run the API server:
 
 ```bash
-python3 -m ragger_server
+python3 -m ragger.server
 ```
 
-You can also use the package-native entrypoint:
-
-```bash
-python3 -m ragger.server.app
-```
+Start the server before using the Pi extension.
 
 The default API base URL is:
 
@@ -80,18 +79,36 @@ http://127.0.0.1:8170/redoc
 http://127.0.0.1:8170/openapi.json
 ```
 
+The checked-in exported spec lives at [docs/openapi.json](/Users/hdkiller/Develop/pets/ragger/docs/openapi.json:1).
+
 Run the CLI:
 
 ```bash
-python3 -m ragger_cli index default /path/to/repo
-python3 -m ragger_cli stats default
-python3 -m ragger_cli search default "Where is auth configured?"
+python3 -m ragger.cli index default /path/to/repo
+python3 -m ragger.cli stats default
+python3 -m ragger.cli search default "Where is auth configured?"
 ```
 
-Or the package-native CLI:
+If you install the project, console scripts are also available:
 
 ```bash
-python3 -m ragger.cli.main index default /path/to/repo
+ragger-tui
+ragger-server
+ragger-cli search default "Where is auth configured?"
+```
+
+## Pi extension
+
+Before starting Pi with `pi-ragger`, make sure the local ragger server is already running:
+
+```bash
+python3 -m ragger.server
+```
+
+Then start Pi with the extension:
+
+```bash
+pi -e ./pi-ragger/index.ts
 ```
 
 ## API curl examples
@@ -103,7 +120,7 @@ curl -sS http://127.0.0.1:8170/workspaces/index \
   -H 'Content-Type: application/json' \
   -d '{
     "workspace": "book",
-    "path": "/Users/hdkiller/Develop/pets/ragger/tmp/alice.txt",
+    "path": "/absolute/path/to/alice.txt",
     "replace": true
   }'
 ```
@@ -155,7 +172,7 @@ Export the checked-in OpenAPI spec:
 Run the unit test suite with:
 
 ```bash
-PYTHONPYCACHEPREFIX=/tmp/pycache .venv/bin/python -m unittest discover -s tests -v
+PYTHONPYCACHEPREFIX=/tmp/pycache .venv/bin/python -m unittest discover -s tests/unit -v
 ```
 
 Current test coverage includes:

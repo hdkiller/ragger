@@ -18,3 +18,8 @@ dependencies = [
     "textual>=0.80.0",
     "uvicorn>=0.32.0",
 ]
+
+[project.scripts]
+ragger-tui = "ragger.tui.app:main"
+ragger-server = "ragger.server.app:main"
+ragger-cli = "ragger.cli.main:main"

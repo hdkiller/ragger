@@ -1,6 +1,6 @@
 import os
 
-from rag.workspaces import RAGWorkspaceManager
+from ragger.core.workspaces import RAGWorkspaceManager
 
 
 if __name__ == "__main__":

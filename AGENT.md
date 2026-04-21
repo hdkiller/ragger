@@ -17,36 +17,28 @@
 - `ragger/tui/`: TUI app and UI helpers
 - `ragger/cli/`: CLI entrypoint
 - `pi-ragger/`: Pi extension
-- `tests/`: stdlib `unittest` suite
+- `tests/unit/`: stdlib `unittest` suite
 
-Legacy compatibility wrappers still exist at repo root:
-
-- `main.py`
-- `ragger_server.py`
-- `ragger_cli.py`
-- `rag/`
-- `tui/`
-
-When changing behavior, prefer updating the code under `ragger/` and only keep wrappers thin.
+`ragger/` is the only source of truth for Python application code.
 
 ## Local commands
 
 Run the TUI:
 
 ```bash
-python3 main.py
+python3 -m ragger.tui
 ```
 
 Run the API server:
 
 ```bash
-python3 -m ragger_server
+python3 -m ragger.server
 ```
 
 Run the CLI:
 
 ```bash
-python3 -m ragger_cli search default "Where is auth configured?"
+python3 -m ragger.cli search default "Where is auth configured?"
 ```
 
 Export OpenAPI:
@@ -55,10 +47,12 @@ Export OpenAPI:
 .venv/bin/python scripts/export_openapi.py
 ```
 
+The checked-in exported spec lives at `docs/openapi.json`.
+
 Run tests:
 
 ```bash
-PYTHONPYCACHEPREFIX=/tmp/pycache .venv/bin/python -m unittest discover -s tests -v
+PYTHONPYCACHEPREFIX=/tmp/pycache .venv/bin/python -m unittest discover -s tests/unit -v
 ```
 
 ## Notes for changes

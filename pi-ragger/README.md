@@ -7,7 +7,7 @@ Pi extension for the local `ragger` FastAPI server.
 Start the Python API locally:
 
 ```bash
-python3 -m ragger_server
+python3 -m ragger.server
 ```
 
 The extension expects the server at `http://127.0.0.1:8170` by default. Override with `RAGGER_BASE_URL`.

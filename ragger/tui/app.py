@@ -199,3 +199,12 @@ class RaggerApp(App):
                 last_ingest_summary=self.last_ingest_summary,
             )
         )
+
+
+def main() -> None:
+    app = RaggerApp()
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
