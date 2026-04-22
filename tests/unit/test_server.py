@@ -92,6 +92,22 @@ class ServerRouteTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["workspace"], "book")
 
+    def test_workspace_files_endpoint_returns_manifest(self):
+        fake_files = [
+            {
+                "relative_path": "alice.txt",
+                "source": "/tmp/alice.txt",
+                "extension": ".txt",
+                "language": "text",
+                "chunk_count": 94,
+            }
+        ]
+        with patch("ragger.server.app.manager.list_workspace_files", return_value=fake_files):
+            response = self.client.get("/workspaces/book/files")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"workspace": "book", "files": fake_files})
+
 
 if __name__ == "__main__":
     unittest.main()

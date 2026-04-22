@@ -19,10 +19,18 @@ def main() -> None:
     stats_parser = subparsers.add_parser("stats", help="Show workspace stats")
     stats_parser.add_argument("workspace", nargs="?", default=DEFAULT_WORKSPACE)
 
+    workspaces_parser = subparsers.add_parser("workspaces", help="List indexed workspaces")
+
     search_parser = subparsers.add_parser("search", help="Search a workspace")
     search_parser.add_argument("workspace", nargs="?", default=DEFAULT_WORKSPACE)
     search_parser.add_argument("query")
     search_parser.add_argument("-k", type=int, default=5)
+
+    list_parser = subparsers.add_parser("list", help="List indexed files in a workspace")
+    list_parser.add_argument("workspace", nargs="?", default=DEFAULT_WORKSPACE)
+
+    clear_parser = subparsers.add_parser("clear", help="Delete a workspace collection and metadata")
+    clear_parser.add_argument("workspace", nargs="?", default=DEFAULT_WORKSPACE)
 
     args = parser.parse_args()
     manager = RAGWorkspaceManager()
@@ -40,6 +48,10 @@ def main() -> None:
         print(json.dumps(manager.get_workspace_stats(args.workspace), indent=2))
         return
 
+    if args.command == "workspaces":
+        print(json.dumps(manager.list_workspaces(), indent=2))
+        return
+
     if args.command == "search":
         print(
             json.dumps(
@@ -47,6 +59,14 @@ def main() -> None:
                 indent=2,
             )
         )
+        return
+
+    if args.command == "list":
+        print(json.dumps(manager.list_workspace_files(args.workspace), indent=2))
+        return
+
+    if args.command == "clear":
+        print(json.dumps(manager.delete_workspace(args.workspace), indent=2))
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ from ragger.models import (
     IndexResponse,
     SearchRequest,
     SearchResponse,
+    WorkspaceFilesResponse,
     WorkspaceStats,
     WorkspacesResponse,
 )
@@ -49,6 +50,19 @@ def build_router(manager: RAGWorkspaceManager) -> APIRouter:
             return manager.get_workspace_stats(workspace)
         except ValueError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    @router.get(
+        "/workspaces/{workspace}/files",
+        response_model=WorkspaceFilesResponse,
+        tags=["workspaces"],
+        summary="List indexed files in a workspace",
+    )
+    def workspace_files(workspace: str):
+        try:
+            files = manager.list_workspace_files(workspace)
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        return {"workspace": workspace, "files": files}
 
     @router.post(
         "/workspaces/index",

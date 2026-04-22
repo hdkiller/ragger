@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from langchain_community.document_loaders import TextLoader
 from langchain_core.documents import Document
@@ -76,12 +78,26 @@ class IngestPreparation:
     root_path: str
 
 
+@dataclass
+class IngestProgress:
+    workspace: str
+    current_file: int
+    total_files: int
+    relative_path: str
+    chunk_count: int
+
+
 class CodebaseIngestor:
     def __init__(self, chunk_size: int = 2000, chunk_overlap: int = 200):
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
 
-    def prepare_documents(self, path: str, workspace: str) -> IngestPreparation:
+    def prepare_documents(
+        self,
+        path: str,
+        workspace: str,
+        progress_callback: Callable[[IngestProgress], None] | None = None,
+    ) -> IngestPreparation:
         source_path = Path(path).expanduser().resolve()
         if not source_path.exists():
             raise ValueError(f"Path does not exist: {path}")
@@ -94,10 +110,20 @@ class CodebaseIngestor:
         all_chunks: list[Document] = []
         indexed_extensions: set[str] = set()
 
-        for file_path in files:
+        for index, file_path in enumerate(files, start=1):
             indexed_extensions.add(file_path.suffix.lower())
             chunks = self._chunk_file(file_path=file_path, root_path=root_path, workspace=workspace)
             all_chunks.extend(chunks)
+            if progress_callback is not None:
+                progress_callback(
+                    IngestProgress(
+                        workspace=workspace,
+                        current_file=index,
+                        total_files=len(files),
+                        relative_path=str(file_path.relative_to(root_path)),
+                        chunk_count=len(chunks),
+                    )
+                )
 
         return IngestPreparation(
             documents=all_chunks,

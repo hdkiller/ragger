@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import json
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import httpx
 from chromadb import PersistentClient
@@ -20,7 +22,7 @@ from ragger.config import (
     DEFAULT_PERSIST_DIRECTORY,
     DEFAULT_WORKSPACE,
 )
-from ragger.core.ingest import CodebaseIngestor
+from ragger.core.ingest import CodebaseIngestor, IngestProgress
 
 
 class RAGWorkspaceManager:
@@ -58,12 +60,22 @@ Answer:"""
         self.llm = ChatOllama(model=self.model_name, temperature=0, base_url=self.ollama_base_url)
         self.ingestor = CodebaseIngestor()
 
-    def ingest_workspace(self, workspace: str, path: str, replace: bool = True) -> dict[str, Any]:
+    def ingest_workspace(
+        self,
+        workspace: str,
+        path: str,
+        replace: bool = True,
+        progress_callback: Callable[[IngestProgress], None] | None = None,
+    ) -> dict[str, Any]:
         workspace = self._normalize_workspace(workspace)
         if replace:
             self._delete_collection(workspace)
 
-        prepared = self.ingestor.prepare_documents(path=path, workspace=workspace)
+        prepared = self.ingestor.prepare_documents(
+            path=path,
+            workspace=workspace,
+            progress_callback=progress_callback,
+        )
         vectorstore = self._get_vectorstore(workspace)
         if prepared.documents:
             vectorstore.add_documents(prepared.documents)
@@ -77,6 +89,7 @@ Answer:"""
             "file_count": prepared.file_count,
             "chunk_count": chunk_count,
             "indexed_extensions": prepared.indexed_extensions,
+            "indexed_files": self._build_file_manifest(prepared.documents),
             "last_indexed_at": self._timestamp(),
             "embedding_model": self.embedding_model,
             "model": self.model_name,
@@ -108,6 +121,16 @@ Answer:"""
     def list_workspaces(self) -> list[dict[str, Any]]:
         state = self._load_state()
         return [self.get_workspace_stats(workspace) for workspace in sorted(state)]
+
+    def list_workspace_files(self, workspace: str) -> list[dict[str, Any]]:
+        workspace = self._normalize_workspace(workspace)
+        self._ensure_workspace_exists(workspace)
+        state = self._load_state()
+        stats = state[workspace]
+        manifest = stats.get("indexed_files")
+        if manifest:
+            return manifest
+        return self._build_file_manifest_from_root(stats.get("root_path", ""))
 
     def get_workspace_stats(self, workspace: str) -> dict[str, Any]:
         workspace = self._normalize_workspace(workspace)
@@ -205,6 +228,42 @@ Answer:"""
     @staticmethod
     def _format_docs(docs: list[Document]) -> str:
         return "\n\n".join(doc.page_content for doc in docs)
+
+    def _build_file_manifest(self, documents: list[Document]) -> list[dict[str, Any]]:
+        manifest: dict[str, dict[str, Any]] = {}
+        for document in documents:
+            relative_path = document.metadata.get("relative_path", "unknown")
+            entry = manifest.setdefault(
+                relative_path,
+                {
+                    "relative_path": relative_path,
+                    "source": document.metadata.get("source", "unknown"),
+                    "extension": document.metadata.get("extension", ""),
+                    "language": document.metadata.get("language", "text"),
+                    "chunk_count": 0,
+                },
+            )
+            entry["chunk_count"] += 1
+        return [manifest[path] for path in sorted(manifest)]
+
+    def _build_file_manifest_from_root(self, root_path: str) -> list[dict[str, Any]]:
+        source_path = Path(root_path).expanduser()
+        if not source_path.exists():
+            return []
+
+        files = self.ingestor._collect_files(source_path.resolve())
+        manifest: list[dict[str, Any]] = []
+        for file_path in files:
+            manifest.append(
+                {
+                    "relative_path": str(file_path.relative_to(source_path.resolve())),
+                    "source": str(file_path.resolve()),
+                    "extension": file_path.suffix.lower(),
+                    "language": self.ingestor._get_language_name(file_path.suffix.lower()),
+                    "chunk_count": None,
+                }
+            )
+        return manifest
 
     @staticmethod
     def _timestamp() -> str:
