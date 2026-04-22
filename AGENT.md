@@ -26,19 +26,19 @@
 Run the TUI:
 
 ```bash
-python3 -m ragger.tui
+.venv/bin/python -m ragger.tui
 ```
 
 Run the API server:
 
 ```bash
-python3 -m ragger.server
+.venv/bin/python -m ragger.server.app
 ```
 
 Run the CLI:
 
 ```bash
-python3 -m ragger.cli search default "Where is auth configured?"
+.venv/bin/python -m ragger.cli search default "Where is auth configured?"
 ```
 
 Export OpenAPI:
@@ -69,6 +69,9 @@ Format Python code:
 - Reindexing a workspace replaces the previous collection by default.
 - TUI and FastAPI should share the same core services, not call each other over HTTP.
 - Keep Pi-facing server behavior retrieval-focused; Pi does final answer generation.
+- The dashboard integration spans two repos:
+  - `ragger/ragger/` owns HTTP endpoints and Python-side workspace/file/search behavior
+  - `ragger/pi-ragger/` owns the Pi extension schema, slash command integration, and dashboard-facing module/status-bar definitions
 
 ## Commit convention
 
