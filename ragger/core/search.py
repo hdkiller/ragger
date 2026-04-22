@@ -1,5 +1,11 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from ragger.config import DEFAULT_MODEL_NAME, DEFAULT_PERSIST_DIRECTORY, DEFAULT_WORKSPACE
-from ragger.core.workspaces import RAGWorkspaceManager
+
+if TYPE_CHECKING:
+    from ragger.core.workspaces import RAGWorkspaceManager
 
 
 class RAGEngine:
@@ -8,13 +14,17 @@ class RAGEngine:
         model_name: str = DEFAULT_MODEL_NAME,
         persist_directory: str = DEFAULT_PERSIST_DIRECTORY,
         workspace: str = DEFAULT_WORKSPACE,
-        manager: RAGWorkspaceManager | None = None,
+        manager: "RAGWorkspaceManager | None" = None,
     ):
         self.workspace = workspace
-        self.manager = manager or RAGWorkspaceManager(
-            persist_directory=persist_directory,
-            model_name=model_name,
-        )
+        if manager is None:
+            from ragger.core.workspaces import RAGWorkspaceManager
+
+            manager = RAGWorkspaceManager(
+                persist_directory=persist_directory,
+                model_name=model_name,
+            )
+        self.manager = manager
         self.model_name = self.manager.model_name
         self.embedding_model = self.manager.embedding_model
         self.persist_directory = self.manager.persist_directory
@@ -41,6 +51,10 @@ class RAGEngine:
 
     def list_workspaces(self):
         return self.manager.list_workspaces()
+
+    def list_workspace_files(self, workspace: str | None = None):
+        active_workspace = workspace or self.workspace
+        return self.manager.list_workspace_files(active_workspace)
 
     def get_health(self):
         return self.manager.get_health()

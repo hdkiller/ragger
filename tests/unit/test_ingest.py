@@ -60,6 +60,26 @@ class CodebaseIngestorTests(unittest.TestCase):
             self.assertEqual(metadata["extension"], ".txt")
             self.assertEqual(metadata["language"], "text")
 
+    def test_prepare_documents_reports_progress(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "a.md").write_text("# A\n")
+            (root / "b.txt").write_text("hello\n")
+            progress_updates = []
+
+            ingestor = CodebaseIngestor(chunk_size=50, chunk_overlap=0)
+            prepared = ingestor.prepare_documents(
+                str(root),
+                workspace="book",
+                progress_callback=progress_updates.append,
+            )
+
+            self.assertEqual(prepared.file_count, 2)
+            self.assertEqual(len(progress_updates), 2)
+            self.assertEqual(progress_updates[0].current_file, 1)
+            self.assertEqual(progress_updates[-1].current_file, 2)
+            self.assertEqual(progress_updates[-1].total_files, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

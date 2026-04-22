@@ -28,6 +28,14 @@ class SearchHit(BaseModel):
     content: str
 
 
+class WorkspaceFile(BaseModel):
+    relative_path: str
+    source: str
+    extension: str
+    language: str
+    chunk_count: int | None = None
+
+
 class WorkspaceStats(BaseModel):
     workspace: str
     root_path: str
@@ -51,6 +59,11 @@ class HealthStatus(BaseModel):
 
 class WorkspacesResponse(BaseModel):
     workspaces: list[WorkspaceStats]
+
+
+class WorkspaceFilesResponse(BaseModel):
+    workspace: str
+    files: list[WorkspaceFile]
 
 
 class IndexResponse(WorkspaceStats):
